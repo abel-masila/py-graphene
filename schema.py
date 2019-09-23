@@ -1,6 +1,6 @@
 import graphene
 import json
-import  uuid
+import uuid
 from graphene import ObjectType
 from datetime import datetime
 
@@ -37,7 +37,7 @@ class CreateUser(graphene.Mutation):
 
     def mutate(self, info, username):
         print(username)
-        user = User(username=username )
+        user = User(username=username)
         return CreateUser(user=user)
 
 
@@ -48,17 +48,15 @@ class Mutation(ObjectType):
 schema = graphene.Schema(query=Query, mutation=Mutation)
 
 rs = schema.execute('''
-       mutation {
-        createUser(username:"Jeff") {
-            user {
-                id
-                username
-                createdAt
-            }
-            }
-       }
-    
-    ''')
+      query getusers ($limit: Int){
+        users(limit:$limit) {
+            id
+            username
+            createdAt
+      }
+      }
+    ''',
+                    variable_values={"limit": 1})
 dictResult = dict(rs.data.items())
 
 print(json.dumps(dictResult, indent=3))
