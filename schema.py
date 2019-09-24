@@ -15,6 +15,10 @@ class User(ObjectType):
     username = graphene.String()
     created_at = graphene.DateTime(default_value=datetime.now())
 
+    avatar_url=graphene.String()
+    def resolve_avatar_url(self,info):
+        return 'http://google.com/{}/{}'.format(self.username,self.id)
+
 
 class Query(ObjectType):
     users = graphene.List(User, limit=graphene.Int())
@@ -54,6 +58,8 @@ class CreatePost(graphene.Mutation):
         content = graphene.String()
 
     def mutate(self, info, title, content):
+        if info.context.get('is_anonymous'):
+           raise  Exception('Not Authenticated')
         post = Post(title=title, content=content)
         return CreatePost(post=post)
 
@@ -66,15 +72,15 @@ class Mutation(ObjectType):
 schema = graphene.Schema(query=Query, mutation=Mutation)
 
 rs = schema.execute('''
-      mutation {
-       createPost(title: "Hello", content: "World"){
-         post {
-            title
-            content 
+     {
+        users {
+            id
+            username
+            avatarUrl
         }
-    }
- }
-    ''')
+     }
+    ''',
+                    context={'is_anonymous': True})
 dictResult = dict(rs.data.items())
 
 print(json.dumps(dictResult, indent=3))
